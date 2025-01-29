@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>อ่านชื่อสารเคมี กับครูเอ้</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background-image: url('https://lh3.googleusercontent.com/d/1cRjmewsu6G3stxXSqMZO7l1-b1Rhs4Bt');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4">
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">อ่านชื่อสารเคมี กับครูเอ้</h1>
+        
+        <!-- Game Container -->
+        <div class="bg-white rounded-lg shadow-lg p-6 bg-opacity-90">
+            <!-- Score and Progress -->
+            <div class="flex justify-between mb-4">
+                <div class="text-lg">คะแนน: <span id="score">0</span></div>
+                <div class="text-lg">ข้อที่: <span id="questionCount">0</span>/10</div>
+            </div>
+
+            <!-- Question Image -->
+            <img id="questionImage" src="" class="w-full h-48 object-contain mb-6 rounded-lg border-2 border-gray-200">
+
+            <!-- Choices -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" id="choicesContainer"></div>
+
+            <!-- Check Button -->
+            <button id="checkBtn" 
+                    class="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300"
+                    disabled>
+                ตรวจคำตอบ
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ฐานข้อมูลสารเคมีตัวอย่าง
+        const chemicals = [
+    {
+        "name": "3-ethyl-5-methylcyclohex-1-ene",
+        "image": "https://lh3.googleusercontent.com/d/14wLts8z4gGyQe68tX7w22_xNB1_Q05x7",
+        "audio": "..."
+    },
+    {
+        "name": "4,5-dimethylhex-2-yne",
+        "image": "https://lh3.googleusercontent.com/d/1aNkgahBnEgpdeMq6gMHPk2l55MLrVO3R",
+        "audio": "..."
+    },
+    {
+        "name": "chlorobenzene",
+        "image": "https://lh3.googleusercontent.com/d/1GHtlthfhmFADgwXwllHYOC5jnYPzOkYj",
+        "audio": "..."
+    },
+    {
+        "name": "3-methylhexan-3-ol",
+        "image": "https://lh3.googleusercontent.com/d/1Y4BVk77TBwGXeJeLMxu89WoT1taK6bqZ",
+        "audio": "..."
+    },
+    {
+        "name": "2-ethoxybutane",
+        "image": "https://lh3.googleusercontent.com/d/10m6pLNRXc7EhYnCYS1-48S7v3IH5w03v",
+        "audio": "..."
+    },
+    {
+        "name": "3-methylbutanal",
+        "image": "https://lh3.googleusercontent.com/d/1S3CLFdXcM1HgySvxvSCUrIKcjHxoW0Vf",
+        "audio": "..."
+    },
+    {
+        "name": "pentan-2-one",
+        "image": "https://lh3.googleusercontent.com/d/1jmou47mDde1v6k4LuWDL-nA8eKhqvuTG",
+        "audio": "..."
+    },
+    {
+        "name": "3-methylbutanoic acid",
+        "image": "https://lh3.googleusercontent.com/d/1IhmFn1MT0bWE_EPo-YbYPks0mffMhR5S",
+        "audio": "..."
+    },
+    {
+        "name": "propyl ethanoate",
+        "image": "https://lh3.googleusercontent.com/d/11UMXqXKBFhRKkx31EtFmHb45yb_dzERJ",
+        "audio": "..."
+    },
+    {
+        "name": "pentan-2-amine",
+        "image": "https://lh3.googleusercontent.com/d/1tJI6isUtJwfqH0bI-KWNSfBrnau4nxtb",
+        "audio": "..."
+    },
+    {
+        "name": "4,5-dimethylhexanamide",
+        "image": "https://lh3.googleusercontent.com/d/1NZadOBTvB9V27VW5PpEZPlcksvL45xxy",
+        "audio": "..."
+    },
+    {
+        "name": "4-ethyl-3-methylheptane",
+        "image": "https://lh3.googleusercontent.com/d/1tGcln0dAbTcPJGZ92GUuKuo9cHJUvRj3",
+        "audio": "..."
+    },
+    {
+        "name": "3-methylcyclopent-1-ene หรือ 3-methylcyclopentene",
+        "image": "https://lh3.googleusercontent.com/d/11ZUr0o_gBZtg-f0U-F3L7aMw2eZWKMz5",
+        "audio": "..."
+    },
+    {
+        "name": "1,4-diethyl-2-methylbenzene",
+        "image": "https://lh3.googleusercontent.com/d/18dJrre0Qfp6hJ_nPDsNl7J1zXctLJPu6",
+        "audio": "..."
+    },
+    {
+        "name": "6-methylhept-2-yne",
+        "image": "https://lh3.googleusercontent.com/d/1e26B7z1q4XvQHCra7u6n4YT9KVDPAPB1",
+        "audio": "..."
+    },
+    {
+        "name": "2-methoxypropane",
+        "image": "https://lh3.googleusercontent.com/d/1WJtXg4GumVUqIaPCGbBzDEQNcuNoIg_3",
+        "audio": "..."
+    },
+    {
+        "name": "pentanamide",
+        "image": "https://lh3.googleusercontent.com/d/1UiTATIZ5_Z__TFdooVvjVZnaRFpT8Ccn",
+        "audio": "..."
+    },
+    {
+        "name": "ethyl propanoate",
+        "image": "https://lh3.googleusercontent.com/d/1KP1_t372IGfATaIZodoSUCYvu6lWUc_2",
+        "audio": "..."
+    },
+    {
+        "name": "2-methylbutanal",
+        "image": "https://lh3.googleusercontent.com/d/1cS9hq5N2C-_uzCRXWTGszgQlGIPLZRYC",
+        "audio": "..."
+    },
+    {
+        "name": "heptan-2-amine",
+        "image": "https://lh3.googleusercontent.com/d/14_HbaS7QtP1PdBvqgXbKf64aKsQipfkc",
+        "audio": "..."
+    },
+    {
+        "name": "hexan-3-one",
+        "image": "https://lh3.googleusercontent.com/d/1oOqtXuusOBYLAjayFF5Dc8FCl7Oba5iD",
+        "audio": "..."
+    },
+    {
+        "name": "pentan-3-ol",
+        "image": "https://lh3.googleusercontent.com/d/1xE4dKZjr7MtmRmnYGjqkBjwwmSxAhcD1",
+        "audio": "..."
+    },
+    {
+        "name": "3-methylbutanoic acid",
+        "image": "https://lh3.googleusercontent.com/d/1NURE8i4Ob_I28TRIMmwSG0YMwGKanbtf",
+        "audio": "..."
+    },
+    {
+        "name": "pent-2-ene",
+        "image": "https://lh3.googleusercontent.com/d/1UDMRfMflfWEQT_jlgFt3Htn3P2F1Ioaj",
+        "audio": "..."
+    },
+    {
+        "name": "hexanamide",
+        "image": "https://lh3.googleusercontent.com/d/1eLFb1c-j54Vj5DBpfXOJXtMpIpWlJwcv",
+        "audio": "..."
+    },
+    {
+        "name": "butan-2-one",
+        "image": "https://lh3.googleusercontent.com/d/13S3MN3B723F5I6zpvW70UwRCMuhAHBS0",
+        "audio": "..."
+    },
+    {
+        "name": "propan-1-ol",
+        "image": "https://lh3.googleusercontent.com/d/1OOy1suS8XRaMt1t8Iqw3Haicm6KmB0M-",
+        "audio": "..."
+    },
+    {
+        "name": "butan-1-amine",
+        "image": "https://lh3.googleusercontent.com/d/1uLFYiGK8Yvlb_dliBAoYIZcY7Y5KS9bE",
+        "audio": "..."
+    },
+    {
+        "name": "ethyl butanoate",
+        "image": "https://lh3.googleusercontent.com/d/1GOnNHa_SnndfJJ6ZsQRaUk326C34m5_Q",
+        "audio": "..."
+    },
+    {
+        "name": "3-chlorobutanal",
+        "image": "https://lh3.googleusercontent.com/d/1UtoI8TBLNlZNyenB3c3JgsiTQkE7A6Nr",
+        "audio": "..."
+    },
+    {
+        "name": "1-ethoxypentane",
+        "image": "https://lh3.googleusercontent.com/d/1xE3LeSvucZBc-irPlQh8nDqf_7094-ku",
+        "audio": "..."
+    },
+    {
+        "name": "5-methylcyclonon-1-yne",
+        "image": "https://lh3.googleusercontent.com/d/1AR77qukuxdJuP3A3fwin5Pby4omzkelF",
+        "audio": "..."
+    },
+    {
+        "name": "1-ethyl-2-methylbenzene",
+        "image": "https://lh3.googleusercontent.com/d/19T-vxpoAPk_ktNUaaQDcud-oN1TZzTLH",
+        "audio": "..."
+    },
+    {
+        "name": "3,3-dimethylbutanoic acid",
+        "image": "https://lh3.googleusercontent.com/d/1EgLYDpu0vZ40KlqkvwHsJVsZGZYlwzDC",
+        "audio": "..."
+    },
+    {
+        "name": "3-ethyl-2,4-dimethylhexane",
+        "image": "https://lh3.googleusercontent.com/d/1830PTif3i-xfWzlAUg1OhDiT9loUXPFe",
+        "audio": "..."
+    },
+    {
+        "name": "1-ethyl-3-methylcyclooctane",
+        "image": "https://lh3.googleusercontent.com/d/14Du05OH2BrKRA09pshB7AKKiFw6QG7_p",
+        "audio": "..."
+    },
+
+            // เพิ่มข้อมูลสารเคมีอื่นๆ ตามต้องการ
+        ];
+
+        let currentQuestion = null;
+        let selectedAnswer = null;
+        let score = 0;
+        let questionCount = 0;
+
+        // สุ่มคำถามใหม่
+        async function newQuestion() {
+            questionCount++;
+            if(questionCount > 10) {
+                // แสดงผลคะแนนรวมด้วย SweetAlert2
+                Swal.fire({
+                    title: 'เกมจบ!',
+                    text: `คะแนนรวม: ${score}`,
+                    icon: 'success',
+                    confirmButtonText: 'เล่นอีกครั้ง'
+                }).then(() => {
+                    location.reload();
+                });
+                return;
+            }
+
+            // สุ่มสารเคมีโจทย์
+            currentQuestion = chemicals[Math.floor(Math.random() * chemicals.length)];
+            
+            // สุ่มตัวเลือก (3 ตัวเลือกผิด + 1 ตัวเลือกถูก)
+            const choices = [currentQuestion];
+            while(choices.length < 4) {
+                const randomChem = chemicals[Math.floor(Math.random() * chemicals.length)];
+                if(!choices.some(chem => chem.name === randomChem.name)) {
+                    choices.push(randomChem);
+                }
+            }
+            choices.sort(() => Math.random() - 0.5);
+
+            // อัพเดท UI
+            document.getElementById('questionImage').src = currentQuestion.image;
+            document.getElementById('questionCount').textContent = questionCount;
+            
+            // สร้างตัวเลือก
+            const choicesContainer = document.getElementById('choicesContainer');
+            choicesContainer.innerHTML = choices.map(chem => `
+                <button onclick="playAudio('${chem.audio}'); selectAnswer('${chem.name}', this)" 
+                        class="p-3 text-center rounded-lg border-2 hover:bg-blue-50 transition-colors w-full">
+                    ${chem.name}
+                </button>
+            `).join('');
+        }
+
+        // เล่นเสียงเมื่อเลือกคำตอบ
+        function playAudio(url) {
+            new Audio(url).play();
+        }
+
+        // เลือกคำตอบ
+        function selectAnswer(answer, button) {
+            selectedAnswer = answer;
+            document.getElementById('checkBtn').disabled = false;
+
+            // Reset all buttons to default state
+            const buttons = document.querySelectorAll('#choicesContainer button');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-blue-200');
+            });
+
+            // Highlight selected button
+            button.classList.add('bg-blue-200');
+        }
+
+        // ตรวจคำตอบ
+        function checkAnswer() {
+            const isCorrect = selectedAnswer === currentQuestion.name;
+            const buttons = document.querySelectorAll('#choicesContainer button');
+
+            buttons.forEach(button => {
+                if (button.textContent.trim() === currentQuestion.name) {
+                    button.classList.remove('bg-blue-200');
+                    button.classList.add(isCorrect ? 'bg-green-200' : 'bg-red-200');
+                } else {
+                    button.disabled = true;
+                }
+            });
+
+            if (isCorrect) {
+                score++;
+                document.getElementById('score').textContent = score;
+                new Audio('https://js-nonsaad.github.io/pm2.5/Correct.mp3').play();
+            } else {
+                new Audio('https://js-nonsaad.github.io/pm2.5/Incorrect.mp3').play();
+            }
+
+            document.getElementById('checkBtn').disabled = true;
+            setTimeout(newQuestion, 1500);
+        }
+
+        // เริ่มเกม
+        document.getElementById('checkBtn').addEventListener('click', checkAnswer);
+        newQuestion();
+    </script>
+</body>
+</html>
